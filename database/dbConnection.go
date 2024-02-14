@@ -3,8 +3,8 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 )
 
@@ -18,31 +18,27 @@ const (
 
 var dsn = fmt.Sprintf("user= %v password= %v host=%v port=%v database=%v sslmode=disable", user, password, host, port, database)
 
-var dbConnection *sql.DB
+var DB *sql.DB
 
-func ConnectToDb() error {
+func ConnectToDb() (*sql.DB, error) {
 	db, err := sql.Open("pgx", dsn)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	err = db.Ping()
-
-	if err != nil {
-		return err
-	} else {
-		log.Println("connected")
+	if err = db.Ping(); err != nil {
+		return nil, err
 	}
 
-	dbConnection = db
+	DB = db
 	migrateDb()
 
-	return nil
+	return db, nil
 }
 
 func migrateDb() {
-	err := goose.Up(dbConnection, "./database/migrations")
+	err := goose.Up(DB, "../database/migrations")
 	if err != nil {
 		fmt.Println(err)
 	}

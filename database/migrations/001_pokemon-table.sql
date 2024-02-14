@@ -1,5 +1,5 @@
 -- +goose Up
-CREATE TABLE pokemon (
+CREATE TABLE IF EXISTS pokemon (
     id SERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
     type VARCHAR (100)[] ,
@@ -9,4 +9,4 @@ CREATE TABLE pokemon (
 );
 
 -- +goose Down
-DROP TABLE pokemon;
+DROP TABLE IF EXISTS pokemon;
