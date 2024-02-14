@@ -1,10 +1,10 @@
 package models
 
 type Pokemon struct {
-	id          uint
-	name        string
-	pokemonType []string
-	hp          uint
-	attack      uint
-	defence     uint
+	Id          uint
+	Name        string
+	PokemonType []string
+	Hp          uint
+	Attack      uint
+	Defence     uint
 }
