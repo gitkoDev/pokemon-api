@@ -12,8 +12,34 @@ import (
 	"github.com/lib/pq"
 )
 
+func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Decode pokemon data from json
+
+		pokemon, err := decodeJson(r)
+		if err != nil {
+			log.Println("decodeJson() error", err)
+			return
+		}
+
+		// Insert pokemon into database
+		query := `INSERT INTO pokemon (name, type, hp, attack, defence) VALUES($1, $2, $3, $4, $5)`
+		_, err = db.Exec(query, pokemon.Name, pokemon.PokemonType, pokemon.Hp, pokemon.Attack, pokemon.Defence)
+		if err != nil {
+			log.Println("InsertPokemon() error", err)
+			return
+		}
+
+		responseString := fmt.Sprintf("%s added", pokemon.Name)
+		w.Write([]byte(responseString))
+
+	}
+
+}
+
 func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// Get pokemon from database
 		query := `SELECT name, type, hp, attack, defence FROM pokemon`
 
 		res, err := db.Query(query)
@@ -38,8 +64,9 @@ func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 			selectedPokemon = append(selectedPokemon, pokemon)
 		}
 
-		fmt.Printf("%d pokemon in database", len(selectedPokemon))
-		fmt.Println("Result:", selectedPokemon)
+		// Respond with json
+		responseString := fmt.Sprintf("%d pokemon in database", len(selectedPokemon))
+		w.Write([]byte(responseString))
 	}
 }
 
@@ -72,33 +99,6 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Decode pokemon data from json
-		pokemon := models.Pokemon{}
-
-		w.Header().Set("Content-Type", "application/json")
-
-		err := json.NewDecoder(r.Body).Decode(&pokemon)
-		if err != nil {
-			log.Println("AddPokemon() error decoding from json", err)
-			return
-		}
-
-		// Insert pokemon into database
-		query := `INSERT INTO pokemon (name, type, hp, attack, defene) VALUES($1, $2, $3, $4, $5)`
-		_, err = db.Exec(query, pokemon.Name, pokemon.PokemonType, pokemon.Hp, pokemon.Attack, pokemon.Defence)
-		if err != nil {
-			log.Println("InsertPokemon() error", err)
-		}
-
-		responseString := fmt.Sprintf("%s added", pokemon.Name)
-		w.Write([]byte(responseString))
-
-	}
-
-}
-
 func DeletePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := chi.URLParam(r, "name")
@@ -118,4 +118,15 @@ func DeletePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Printf("Pokemon %s deleted\n", name)
 	}
+}
+
+func decodeJson(httpReq *http.Request) (models.Pokemon, error) {
+	pokemon := models.Pokemon{}
+
+	err := json.NewDecoder(httpReq.Body).Decode(&pokemon)
+	if err != nil {
+		log.Println("AddPokemon() error decoding from json", err)
+		return models.Pokemon{}, err
+	}
+	return pokemon, nil
 }
