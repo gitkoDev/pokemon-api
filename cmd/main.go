@@ -21,7 +21,8 @@ func main() {
 
 	// Routing phase
 	r := chi.NewRouter()
-	r.Get("/", handlers.GetAll(db))
+	r.Get("/allPokemon", handlers.GetAll(db))
+	r.Get("/allPokemon/{name}", handlers.GetByName(db))
 
 	err = http.ListenAndServe(":8080", r)
 	if err != nil {
