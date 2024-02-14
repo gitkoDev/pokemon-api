@@ -1,9 +1,9 @@
 package models
 
 type Pokemon struct {
-	Name        string
-	PokemonType []string
-	Hp          uint
-	Attack      uint
-	Defence     uint
+	Name        string   `json:"name"`
+	PokemonType []string `json:"type"`
+	Hp          uint     `json:"hp"`
+	Attack      uint     `json:"attack"`
+	Defence     uint     `json:"defense"`
 }

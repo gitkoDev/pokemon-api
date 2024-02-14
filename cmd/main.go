@@ -23,6 +23,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Get("/allPokemon", handlers.GetAll(db))
 	r.Get("/allPokemon/{name}", handlers.GetByName(db))
+	r.Post("/allPokemon", handlers.AddPokemon(db))
 	r.Delete("/allPokemon/{name}", handlers.DeletePokemon(db))
 
 	err = http.ListenAndServe(":8080", r)
