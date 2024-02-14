@@ -37,6 +37,7 @@ func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 			selectedPokemon = append(selectedPokemon, pokemon)
 		}
 
+		fmt.Printf("%d pokemon in database", len(selectedPokemon))
 		fmt.Println("Result:", selectedPokemon)
 	}
 }
@@ -68,5 +69,27 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("Attack:", pokemon.Attack)
 		fmt.Println("Defence:", pokemon.Defence)
 
+	}
+}
+
+func DeletePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		name := chi.URLParam(r, "name")
+
+		query := `DELETE FROM pokemon WHERE name = $1`
+
+		_, err := db.Exec(query, name)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				fmt.Printf("No pokemon with name %s found\n", name)
+				return
+			}
+			fmt.Println(err)
+			return
+		}
+
+		fmt.Printf("Pokemon %s deleted\n", name)
 	}
 }
