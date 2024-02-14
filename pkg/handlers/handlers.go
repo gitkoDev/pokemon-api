@@ -18,7 +18,7 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		pokemon, err := decodeJson(r)
 		if err != nil {
-			log.Println("decodeJson() error", err)
+			log.Println("decodeJson() error:", err)
 			return
 		}
 
@@ -90,6 +90,12 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		// Print pokemon data if found
 
+		err = encodeJson(w, pokemon)
+		if err != nil {
+			log.Println("encodeJson() error:", err)
+			return
+		}
+
 		fmt.Println("Name:", pokemon.Name)
 		fmt.Println("Type:", pokemon.PokemonType)
 		fmt.Println("Hp:", pokemon.Hp)
@@ -129,4 +135,12 @@ func decodeJson(httpReq *http.Request) (models.Pokemon, error) {
 		return models.Pokemon{}, err
 	}
 	return pokemon, nil
+}
+
+func encodeJson(writer http.ResponseWriter, pokemon models.Pokemon) error {
+	err := json.NewEncoder(writer).Encode(pokemon)
+	if err != nil {
+		return err
+	}
+	return nil
 }
