@@ -30,8 +30,8 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Insert pokemon into database
-		query := `INSERT INTO pokemon (name, type, hp, attack, defence) VALUES($1, $2, $3, $4, $5)`
-		_, err = db.Exec(query, pokemon.Name, pokemon.PokemonType, pokemon.Hp, pokemon.Attack, pokemon.Defence)
+		query := `INSERT INTO pokemon (name, type, hp, attack, defense) VALUES($1, $2, $3, $4, $5)`
+		_, err = db.Exec(query, pokemon.Name, pokemon.PokemonType, pokemon.Hp, pokemon.Attack, pokemon.Defense)
 		if err != nil {
 			log.Println("InsertPokemon() error", err)
 			return
@@ -47,7 +47,7 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Get pokemon from database
-		query := `SELECT name, type, hp, attack, defence FROM pokemon`
+		query := `SELECT name, type, hp, attack, defense FROM pokemon`
 
 		res, err := db.Query(query)
 		if err != nil {
@@ -62,7 +62,7 @@ func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		for res.Next() {
 			pokemon := models.Pokemon{}
 
-			err := res.Scan(&pokemon.Name, (*pq.StringArray)(&pokemon.PokemonType), &pokemon.Hp, &pokemon.Attack, &pokemon.Defence)
+			err := res.Scan(&pokemon.Name, (*pq.StringArray)(&pokemon.PokemonType), &pokemon.Hp, &pokemon.Attack, &pokemon.Defense)
 			if err != nil {
 				log.Println("GetAll() error scanning row:", err)
 				return
@@ -82,9 +82,9 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		name := chi.URLParam(r, "name")
 
-		query := `SELECT name, type, hp, attack, defence FROM pokemon WHERE name = $1`
+		query := `SELECT name, type, hp, attack, defense FROM pokemon WHERE name = $1`
 
-		err := db.QueryRow(query, name).Scan(&pokemon.Name, (*pq.StringArray)(&pokemon.PokemonType), &pokemon.Hp, &pokemon.Attack, &pokemon.Defence)
+		err := db.QueryRow(query, name).Scan(&pokemon.Name, (*pq.StringArray)(&pokemon.PokemonType), &pokemon.Hp, &pokemon.Attack, &pokemon.Defense)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				responseString := fmt.Sprintf("%s not found", name)
@@ -102,11 +102,42 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		fmt.Println("Name:", pokemon.Name)
-		fmt.Println("Type:", pokemon.PokemonType)
-		fmt.Println("Hp:", pokemon.Hp)
-		fmt.Println("Attack:", pokemon.Attack)
-		fmt.Println("Defence:", pokemon.Defence)
+	}
+}
+
+func UpdatePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		name := chi.URLParam(r, "name")
+
+		// Check for existence
+		isExisting := checkForExistence(db, name)
+		if !isExisting {
+			responseString := fmt.Sprintf("%s not found", name)
+			w.Write([]byte(responseString))
+			return
+		}
+
+		// Decode from request
+		dataToInsert, err := helpers.DecodeJson(r)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		// Update value in DB
+		query := `UPDATE pokemon
+		SET name = $1, type = $2, hp = $3, attack = $4, defense = $5
+		WHERE name = $6
+		`
+		_, err = db.Exec(query, dataToInsert.Name, dataToInsert.PokemonType, dataToInsert.Hp, dataToInsert.Attack, dataToInsert.Defense, name)
+		if err != nil {
+			log.Println("UpdatePokemon() error:", err)
+			return
+		}
+
+		responseString := fmt.Sprintf("%s updated", name)
+		w.Write([]byte(responseString))
 
 	}
 }

@@ -1,6 +1,6 @@
 -- +goose Up
 
-INSERT INTO pokemon (name, type, hp, attack, defence)
+INSERT INTO pokemon (name, type, hp, attack, defense)
 VALUES
 ('Bulbasaur', ARRAY ['Grass', 'Poison'], 45, 49, 49),
 ('Charmander', ARRAY ['Fire'], 39, 52, 43),

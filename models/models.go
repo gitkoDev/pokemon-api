@@ -5,5 +5,5 @@ type Pokemon struct {
 	PokemonType []string `json:"type"`
 	Hp          uint     `json:"hp"`
 	Attack      uint     `json:"attack"`
-	Defence     uint     `json:"defense"`
+	Defense     uint     `json:"defense"`
 }

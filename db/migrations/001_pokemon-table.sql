@@ -1,11 +1,11 @@
 -- +goose Up
-CREATE TABLE IF EXISTS pokemon (
+CREATE TABLE IF NOT EXISTS pokemon (
     id SERIAL PRIMARY KEY,
     name VARCHAR NOT NULL,
     type VARCHAR (100)[] ,
     hp INTEGER,
     attack INTEGER,
-    defence INTEGER
+    defense INTEGER
 );
 
 -- +goose Down
