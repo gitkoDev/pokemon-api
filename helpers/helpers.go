@@ -19,8 +19,8 @@ func DecodeJson(httpReq *http.Request) (models.Pokemon, error) {
 	return pokemon, nil
 }
 
-func EncodeJson(writer http.ResponseWriter, pokemon models.Pokemon) error {
-	err := json.NewEncoder(writer).Encode(pokemon)
+func EncodeJson(writer http.ResponseWriter, data any) error {
+	err := json.NewEncoder(writer).Encode(data)
 	if err != nil {
 		return err
 	}

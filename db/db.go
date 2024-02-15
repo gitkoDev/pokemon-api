@@ -40,7 +40,7 @@ func ConnectToDb() (*sql.DB, error) {
 }
 
 func migrateDb() {
-	err := goose.Up(DB, "../database/migrations")
+	err := goose.Up(DB, "../db/migrations")
 	if err != nil {
 		fmt.Println(err)
 	}

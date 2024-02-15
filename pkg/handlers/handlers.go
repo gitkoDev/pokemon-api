@@ -22,6 +22,13 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		isExisting := checkForExistence(db, pokemon.Name)
+		if isExisting {
+			responseString := fmt.Sprintf("%s already exists", pokemon.Name)
+			w.Write([]byte(responseString))
+			return
+		}
+
 		// Insert pokemon into database
 		query := `INSERT INTO pokemon (name, type, hp, attack, defence) VALUES($1, $2, $3, $4, $5)`
 		_, err = db.Exec(query, pokemon.Name, pokemon.PokemonType, pokemon.Hp, pokemon.Attack, pokemon.Defence)
@@ -65,8 +72,7 @@ func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Respond with json
-		responseString := fmt.Sprintf("%d pokemon in database", len(selectedPokemon))
-		w.Write([]byte(responseString))
+		helpers.EncodeJson(w, selectedPokemon)
 	}
 }
 
@@ -81,7 +87,8 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		err := db.QueryRow(query, name).Scan(&pokemon.Name, (*pq.StringArray)(&pokemon.PokemonType), &pokemon.Hp, &pokemon.Attack, &pokemon.Defence)
 		if err != nil {
 			if err == sql.ErrNoRows {
-				fmt.Printf("No pokemon with name %s found\n", name)
+				responseString := fmt.Sprintf("%s not found", name)
+				w.Write([]byte(responseString))
 				return
 			}
 			fmt.Println("GetByName() error:", err)
@@ -89,7 +96,6 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Print pokemon data if found
-
 		err = helpers.EncodeJson(w, pokemon)
 		if err != nil {
 			log.Println("encodeJson() error:", err)
@@ -107,7 +113,15 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 func DeletePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		name := chi.URLParam(r, "name")
+
+		isExisting := checkForExistence(db, name)
+		if !isExisting {
+			responseString := fmt.Sprintf("%s not found", name)
+			w.Write([]byte(responseString))
+			return
+		}
 
 		query := `DELETE FROM pokemon WHERE name = $1`
 
@@ -115,13 +129,29 @@ func DeletePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			if err == sql.ErrNoRows {
-				fmt.Printf("No pokemon with name %s found\n", name)
+				fmt.Printf("%s not found\n", name)
 				return
 			}
 			fmt.Println(err)
 			return
 		}
 
-		fmt.Printf("Pokemon %s deleted\n", name)
+		responseString := fmt.Sprintf("%s deleted", name)
+		w.Write([]byte(responseString))
 	}
+}
+
+func checkForExistence(db *sql.DB, name string) bool {
+	query := `SELECT id FROM pokemon WHERE name = $1`
+	var id uint
+
+	err := db.QueryRow(query, name).Scan(&id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		}
+		fmt.Println("checkForExistence() error:", err)
+	}
+
+	return true
 }
