@@ -1,4 +1,4 @@
-package database
+package db
 
 import (
 	"database/sql"
@@ -30,6 +30,8 @@ func ConnectToDb() (*sql.DB, error) {
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}
+
+	// defer db.Close()
 
 	DB = db
 	migrateDb()

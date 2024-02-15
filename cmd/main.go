@@ -2,12 +2,9 @@ package main
 
 import (
 	"log"
-	"net/http"
 
-	"github.com/gitkoDev/pokemon-db/database"
-	"github.com/gitkoDev/pokemon-db/pkg/handlers"
-
-	"github.com/go-chi/chi/v5"
+	database "github.com/gitkoDev/pokemon-db/db"
+	"github.com/gitkoDev/pokemon-db/router"
 )
 
 func main() {
@@ -20,15 +17,6 @@ func main() {
 	}
 
 	// Routing phase
-	r := chi.NewRouter()
-	r.Get("/allPokemon", handlers.GetAll(db))
-	r.Get("/allPokemon/{name}", handlers.GetByName(db))
-	r.Post("/allPokemon", handlers.AddPokemon(db))
-	r.Delete("/allPokemon/{name}", handlers.DeletePokemon(db))
-
-	err = http.ListenAndServe(":8080", r)
-	if err != nil {
-		log.Fatalln("error starting the server", err)
-	}
+	router.Route(db)
 
 }
