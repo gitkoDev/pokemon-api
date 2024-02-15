@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
+	_ "github.com/pressly/goose/v3"
 )
 
 const (
@@ -34,14 +34,14 @@ func ConnectToDb() (*sql.DB, error) {
 	// defer db.Close()
 
 	DB = db
-	migrateDb()
+	// migrateDb()
 
 	return db, nil
 }
 
-func migrateDb() {
-	err := goose.Up(DB, "./db/migrations")
-	if err != nil {
-		fmt.Println(err)
-	}
-}
+// func migrateDb() {
+// 	err := goose.Up(DB, "./db/migrations")
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// }
