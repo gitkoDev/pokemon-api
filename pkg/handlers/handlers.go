@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/gitkoDev/pokemon-db/helpers"
 	"github.com/gitkoDev/pokemon-db/models"
 	"github.com/go-chi/chi/v5"
 	"github.com/lib/pq"
@@ -16,7 +16,7 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode pokemon data from json
 
-		pokemon, err := decodeJson(r)
+		pokemon, err := helpers.DecodeJson(r)
 		if err != nil {
 			log.Println("decodeJson() error:", err)
 			return
@@ -90,7 +90,7 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		// Print pokemon data if found
 
-		err = encodeJson(w, pokemon)
+		err = helpers.EncodeJson(w, pokemon)
 		if err != nil {
 			log.Println("encodeJson() error:", err)
 			return
@@ -124,23 +124,4 @@ func DeletePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		fmt.Printf("Pokemon %s deleted\n", name)
 	}
-}
-
-func decodeJson(httpReq *http.Request) (models.Pokemon, error) {
-	pokemon := models.Pokemon{}
-
-	err := json.NewDecoder(httpReq.Body).Decode(&pokemon)
-	if err != nil {
-		log.Println("AddPokemon() error decoding from json", err)
-		return models.Pokemon{}, err
-	}
-	return pokemon, nil
-}
-
-func encodeJson(writer http.ResponseWriter, pokemon models.Pokemon) error {
-	err := json.NewEncoder(writer).Encode(pokemon)
-	if err != nil {
-		return err
-	}
-	return nil
 }
