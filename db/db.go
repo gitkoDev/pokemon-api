@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	user     = "postgres"
+	user     = "pokemon_db"
 	password = 1234
 	host     = "localhost"
 	port     = 5432

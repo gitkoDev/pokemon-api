@@ -1,5 +1,4 @@
 -- +goose Up
-
 INSERT INTO pokemon (name, type, hp, attack, defense)
 VALUES
 ('Bulbasaur', ARRAY ['Grass', 'Poison'], 45, 49, 49),
@@ -15,9 +14,7 @@ VALUES
 ('Spearow', ARRAY ['Normal', 'Flying'], 40, 60, 30),
 ('Ekans', ARRAY ['Poison'], 35, 60, 44),
 ('Pikachu', ARRAY ['Electric'], 35, 55, 40),
-('Sandshrew', ARRAY ['Ground'], 50, 75, 85)
-;
+('Sandshrew', ARRAY ['Ground'], 50, 75, 85);
 
 -- +goose Down
-DELETE FROM pokemon 
-WHERE id >= 1 AND id <= 14;
+TRUNCATE TABLE pokemon;

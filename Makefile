@@ -1,20 +1,57 @@
 DOCKER_CONTAINER=pokemon_db
 BINARY_NAME=pokemonapi
 GOOSE_DRIVER=postgres
-GOOSE_DBSTRING=postgres://postgres@localhost:5432/pokemon_db?sslmode=disable
+GOOSE_DBSTRING=postgres://${DOCKER_CONTAINER}@localhost:5432/pokemon_db?sslmode=disable
 GOOSE_MIGRATION_DIR=./db/migrations
 
+
 postgres:
-	docker run --name ${DOCKER_CONTAINER} -p 5432:5432 -e POSTGRES_PASSWORD=1234 -e POSTGRES_HOST_AUTH_METHOD=trust -d postgres
+	docker run --name ${DOCKER_CONTAINER} -p 5432:5432 -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=${DOCKER_CONTAINER} -e POSTGRES_HOST_AUTH_METHOD=trust -d postgres
 
-createdb:
-	docker exec -ti ${DOCKER_CONTAINER} psql -U postgres 
+initdb: 
+	@echo "initializing database schema"
+	goose -dir ${GOOSE_MIGRATION_DIR} ${GOOSE_DRIVER} ${GOOSE_DBSTRING} ${GOOSE_MIGRATION_DIR } up
+	@echo "initialization finished"
 
-run:
+startdb: start
+	@echo "starting database"
+	docker exec -ti ${DOCKER_CONTAINER} psql -U ${DOCKER_CONTAINER}
+
+start: 
+	@echo "starting container"
+	docker start ${DOCKER_CONTAINER}
+
+stop:
+	docker stop ${DOCKER_CONTAINER}
+	@echo "container stopped"
+
+run: 
+	@echo "Stopping other docker containers"
+	if [ $$(docker ps -q) ]; then \
+		echo "found and stopped containers..."; \
+		docker stop $$(docker ps -q); \
+	else \
+		echo "no active containers found..."; \
+	fi
+	@echo "starting database"
+	docker start ${DOCKER_CONTAINER}
 	go run cmd/main.go
+	docker exec -ti ${DOCKER_CONTAINER} psql -U ${DOCKER_CONTAINER}
+
 
 migrate-up:
-	goose -dir ${GOOSE_MIGRATION_DIR} ${GOOSE_DRIVER} ${GOOSE_DBSTRING} ${GOOSE_MIGRATION_DIR }up 
+	@echo "migrating up"
+	goose -dir ${GOOSE_MIGRATION_DIR} ${GOOSE_DRIVER} ${GOOSE_DBSTRING} ${GOOSE_MIGRATION_DIR } up
+	@echo "migrating finished"
 
 migrate-down:
-	goose -dir ${GOOSE_MIGRATION_DIR} ${GOOSE_DRIVER} ${GOOSE_DBSTRING} ${GOOSE_MIGRATION_DIR }down
+	@echo "migrating down"
+	goose -dir ${GOOSE_MIGRATION_DIR} ${GOOSE_DRIVER} ${GOOSE_DBSTRING} ${GOOSE_MIGRATION_DIR } down
+	@echo "migrating finished"
+
+stop_delete:
+	docker stop pokemon_db
+	docker rm pokemon_db
+
+delete:
+	docker rm pokemon_db
