@@ -23,16 +23,10 @@ start:
 
 stop:
 	docker stop ${DOCKER_CONTAINER}
+	kill -9 [$(lsof -t -i tcp:8080)]
 	@echo "container stopped"
 
 run: 
-	@echo "Stopping other docker containers"
-	if [ $$(docker ps -q) ]; then \
-		echo "found and stopped containers..."; \
-		docker stop $$(docker ps -q); \
-	else \
-		echo "no active containers found..."; \
-	fi
 	@echo "starting database"
 	docker start ${DOCKER_CONTAINER}
 	go run cmd/main.go
