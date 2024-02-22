@@ -1,9 +1,10 @@
 DOCKER_CONTAINER=pokemon_db
 BINARY_NAME=pokemonapi
+DB_PASSWORD=1234
+DB_USER=pokemon_db
 GOOSE_DRIVER=postgres
-GOOSE_DBSTRING=postgres://${DOCKER_CONTAINER}@localhost:5432/pokemon_db?sslmode=disable
+GOOSE_DBSTRING="postgres://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_USER}?sslmode=disable"
 GOOSE_MIGRATION_DIR=./db/migrations
-
 
 postgres:
 	docker run --name ${DOCKER_CONTAINER} -p 5432:5432 -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=${DOCKER_CONTAINER} -e POSTGRES_HOST_AUTH_METHOD=trust -d postgres
@@ -29,7 +30,7 @@ stop:
 run: 
 	@echo "starting database"
 	docker start ${DOCKER_CONTAINER}
-	go run cmd/main.go
+	go run main.go
 	docker exec -ti ${DOCKER_CONTAINER} psql -U ${DOCKER_CONTAINER}
 
 
