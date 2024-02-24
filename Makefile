@@ -21,14 +21,14 @@ reload:
 	./script.sh
 	@echo "container stopped"
 	docker-compose up -d
-	go run main.go
+	go run cmd/main.go
 	
 startPsql: 
 	docker exec -ti ${DOCKER_CONTAINER} psql -U ${DOCKER_CONTAINER}
 
 start:
 	docker-compose up -d
-	go run main.go
+	go run cmd/main.go
 
 
 migrate-up:

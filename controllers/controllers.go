@@ -13,15 +13,18 @@ import (
 	"github.com/lib/pq"
 )
 
-func Hello(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello"))
+func Ping(w http.ResponseWriter, r *http.Request) {
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Pokemon API v.1.0"))
+
 }
 
 func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode pokemon data from json
 
-		pokemon, err := helpers.DecodeJson(r)
+		pokemon, err := helpers.DecodeJSON(r)
 		if err != nil {
 			log.Println("decodeJson() error:", err)
 			return
@@ -30,7 +33,7 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		isExisting := checkForExistence(db, pokemon.Name)
 		if isExisting {
 			responseString := fmt.Sprintf("%s already exists", pokemon.Name)
-			w.Write([]byte(responseString))
+			helpers.WriteJSON(w, responseString, http.StatusBadRequest)
 			return
 		}
 
@@ -43,7 +46,7 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		responseString := fmt.Sprintf("%s added", pokemon.Name)
-		w.Write([]byte(responseString))
+		helpers.WriteJSON(w, responseString, http.StatusCreated)
 
 	}
 }
@@ -76,7 +79,7 @@ func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Respond with json
-		helpers.EncodeJson(w, selectedPokemon)
+		helpers.WriteJSON(w, selectedPokemon, http.StatusOK)
 	}
 }
 
@@ -92,7 +95,7 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			if err == sql.ErrNoRows {
 				responseString := fmt.Sprintf("%s not found", name)
-				w.Write([]byte(responseString))
+				helpers.WriteJSON(w, responseString, http.StatusBadRequest)
 				return
 			}
 			fmt.Println("GetByName() error:", err)
@@ -100,7 +103,7 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Print pokemon data if found
-		err = helpers.EncodeJson(w, pokemon)
+		err = helpers.WriteJSON(w, pokemon, http.StatusOK)
 		if err != nil {
 			log.Println("encodeJson() error:", err)
 			return
@@ -118,12 +121,12 @@ func UpdatePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		isExisting := checkForExistence(db, name)
 		if !isExisting {
 			responseString := fmt.Sprintf("%s not found", name)
-			w.Write([]byte(responseString))
+			helpers.WriteJSON(w, responseString, http.StatusBadRequest)
 			return
 		}
 
 		// Decode from request
-		dataToInsert, err := helpers.DecodeJson(r)
+		dataToInsert, err := helpers.DecodeJSON(r)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -141,7 +144,7 @@ func UpdatePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		responseString := fmt.Sprintf("%s updated", name)
-		w.Write([]byte(responseString))
+		helpers.WriteJSON(w, responseString, http.StatusOK)
 
 	}
 }
@@ -154,7 +157,7 @@ func DeletePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		isExisting := checkForExistence(db, name)
 		if !isExisting {
 			responseString := fmt.Sprintf("%s not found", name)
-			w.Write([]byte(responseString))
+			helpers.WriteJSON(w, responseString, http.StatusBadRequest)
 			return
 		}
 
@@ -164,15 +167,15 @@ func DeletePokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			if err == sql.ErrNoRows {
-				fmt.Printf("%s not found\n", name)
+				log.Printf("%s not found\n", name)
 				return
 			}
-			fmt.Println(err)
+			log.Println(err)
 			return
 		}
 
 		responseString := fmt.Sprintf("%s deleted", name)
-		w.Write([]byte(responseString))
+		helpers.WriteJSON(w, responseString, http.StatusOK)
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/gitkoDev/pokemon-db/models"
 )
 
-func DecodeJson(httpReq *http.Request) (models.Pokemon, error) {
+func DecodeJSON(httpReq *http.Request) (models.Pokemon, error) {
 	pokemon := models.Pokemon{}
 
 	err := json.NewDecoder(httpReq.Body).Decode(&pokemon)
@@ -19,8 +19,9 @@ func DecodeJson(httpReq *http.Request) (models.Pokemon, error) {
 	return pokemon, nil
 }
 
-func EncodeJson(writer http.ResponseWriter, data any) error {
-	err := json.NewEncoder(writer).Encode(data)
+func WriteJSON(w http.ResponseWriter, data any, statusCode int) error {
+	w.WriteHeader(statusCode)
+	err := json.NewEncoder(w).Encode(data)
 	if err != nil {
 		return err
 	}

@@ -31,12 +31,12 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 func Route(db *sql.DB) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/hello", controllers.Hello)
-	r.Post("/allPokemon", controllers.AddPokemon(db))
-	r.Get("/allPokemon", controllers.GetAll(db))
-	r.Get("/allPokemon/{name}", controllers.GetByName(db))
-	r.Put("/allPokemon/{name}", controllers.UpdatePokemon(db))
-	r.Delete("/allPokemon/{name}", controllers.DeletePokemon(db))
+	r.Get("/pokemon-api/v1/ping", controllers.Ping)
+	r.Post("/pokemon-api/v1/allPokemon", controllers.AddPokemon(db))
+	r.Get("/pokemon-api/v1/allPokemon", controllers.GetAll(db))
+	r.Get("/pokemon-api/v1/allPokemon/{name}", controllers.GetByName(db))
+	r.Put("/pokemon-api/v1/allPokemon/{name}", controllers.UpdatePokemon(db))
+	r.Delete("/pokemon-api/v1/allPokemon/{name}", controllers.DeletePokemon(db))
 
 	err := http.ListenAndServe(":8080", r)
 	if err != nil {
