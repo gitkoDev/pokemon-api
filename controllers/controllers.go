@@ -13,6 +13,10 @@ import (
 	"github.com/lib/pq"
 )
 
+func Hello(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("hello"))
+}
+
 func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Decode pokemon data from json
