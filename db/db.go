@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	_ "github.com/pressly/goose/v3"
 )
 
 const (
@@ -31,17 +30,7 @@ func ConnectToDb() (*sql.DB, error) {
 		return nil, err
 	}
 
-	// defer db.Close()
-
 	DB = db
-	// migrateDb()
 
 	return db, nil
 }
-
-// func migrateDb() {
-// 	err := goose.Up(DB, "./db/migrations")
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// }

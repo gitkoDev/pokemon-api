@@ -4,7 +4,7 @@ import (
 	"log"
 
 	database "github.com/gitkoDev/pokemon-db/db"
-	"github.com/gitkoDev/pokemon-db/router"
+	"github.com/gitkoDev/pokemon-db/server"
 )
 
 func main() {
@@ -17,6 +17,6 @@ func main() {
 	}
 
 	// Routing phase
-	router.Route(db)
+	server.Route(db)
 
 }

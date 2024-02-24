@@ -21,7 +21,6 @@ reload:
 	./script.sh
 	@echo "container stopped"
 	docker-compose up -d
-	docker exec -ti ${DOCKER_CONTAINER} psql -U ${DOCKER_CONTAINER}
 	go run main.go
 	
 startPsql: 
@@ -29,7 +28,6 @@ startPsql:
 
 start:
 	docker-compose up -d
-	docker exec -ti ${DOCKER_CONTAINER} psql -U ${DOCKER_CONTAINER}
 	go run main.go
 
 
