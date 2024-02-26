@@ -5,7 +5,7 @@ DB_USER=pokemon_db
 
 GOOSE_DRIVER=postgres
 GOOSE_DBSTRING="postgres://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_USER}?sslmode=disable"
-GOOSE_MIGRATION_DIR=./db/migrations
+GOOSE_MIGRATION_DIR=./schema
 
 # Initial call to migrate all tables
 initdb: 
@@ -31,12 +31,12 @@ run:
 	go run cmd/main.go
 
 
-migrate-up:
+migrateup:
 	@echo "migrating up"
 	goose -dir ${GOOSE_MIGRATION_DIR} ${GOOSE_DRIVER} ${GOOSE_DBSTRING} ${GOOSE_MIGRATION_DIR } up
 	@echo "migrating finished"
 
-migrate-down:
+migratedown:
 	@echo "migrating down"
 	goose -dir ${GOOSE_MIGRATION_DIR} ${GOOSE_DRIVER} ${GOOSE_DBSTRING} ${GOOSE_MIGRATION_DIR } down
 	@echo "migrating finished"

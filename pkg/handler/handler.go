@@ -10,6 +10,7 @@ import (
 	"github.com/gitkoDev/pokemon-db/models"
 	"github.com/gitkoDev/pokemon-db/pkg/service"
 	"github.com/go-chi/chi/v5"
+	"github.com/sirupsen/logrus"
 
 	"github.com/lib/pq"
 )
@@ -35,7 +36,7 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		pokemon, err := helpers.DecodeJSON(r)
 		if err != nil {
-			log.Println("decodeJson() error:", err)
+			logrus.Println("decodeJson() error:", err)
 			return
 		}
 
@@ -50,7 +51,7 @@ func AddPokemon(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		query := `INSERT INTO pokemon (name, type, hp, attack, defense) VALUES($1, $2, $3, $4, $5)`
 		_, err = db.Exec(query, pokemon.Name, pokemon.PokemonType, pokemon.Hp, pokemon.Attack, pokemon.Defense)
 		if err != nil {
-			log.Println("InsertPokemon() error", err)
+			logrus.Println("InsertPokemon() error", err)
 			return
 		}
 
@@ -67,7 +68,7 @@ func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 		res, err := db.Query(query)
 		if err != nil {
-			log.Println("GetAll() error:", err)
+			logrus.Println("GetAll() error:", err)
 			return
 		}
 
@@ -80,7 +81,7 @@ func GetAll(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 
 			err := res.Scan(&pokemon.Name, (*pq.StringArray)(&pokemon.PokemonType), &pokemon.Hp, &pokemon.Attack, &pokemon.Defense)
 			if err != nil {
-				log.Println("GetAll() error scanning row:", err)
+				logrus.Println("GetAll() error scanning row:", err)
 				return
 			}
 
@@ -114,7 +115,7 @@ func GetByName(db *sql.DB) func(w http.ResponseWriter, r *http.Request) {
 		// Print pokemon data if found
 		err = helpers.WriteJSON(w, pokemon, http.StatusOK)
 		if err != nil {
-			log.Println("encodeJson() error:", err)
+			logrus.Println("encodeJson() error:", err)
 			return
 		}
 
