@@ -17,6 +17,10 @@ func main() {
 	}
 
 	// Routing phase
-	server.Route(db)
+	srv := new(server.Server)
+	err = srv.Run("8080", server.Router(db))
+	if err != nil {
+		log.Fatalln("error running server", err)
+	}
 
 }
