@@ -26,7 +26,7 @@ reload:
 startPsql: 
 	docker exec -ti ${DOCKER_CONTAINER} psql -U ${DOCKER_CONTAINER}
 
-start:
+run:
 	docker-compose up -d
 	go run cmd/main.go
 

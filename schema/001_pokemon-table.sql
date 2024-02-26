@@ -3,7 +3,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS pokemon (
     id SERIAL PRIMARY KEY,
-    name VARCHAR NOT NULL,
+    name VARCHAR NOT NULL UNIQUE,
     type VARCHAR (100)[] ,
     hp INTEGER,
     attack INTEGER,

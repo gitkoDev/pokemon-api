@@ -1,4 +1,4 @@
-package controllers
+package handler
 
 import (
 	"database/sql"
@@ -8,10 +8,19 @@ import (
 
 	"github.com/gitkoDev/pokemon-db/helpers"
 	"github.com/gitkoDev/pokemon-db/models"
+	"github.com/gitkoDev/pokemon-db/pkg/service"
 	"github.com/go-chi/chi/v5"
 
 	"github.com/lib/pq"
 )
+
+type Handler struct {
+	services *service.Service
+}
+
+func NewHanler(services *service.Service) *Handler {
+	return &Handler{}
+}
 
 func Ping(w http.ResponseWriter, r *http.Request) {
 
