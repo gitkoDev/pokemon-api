@@ -8,14 +8,22 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type ErrResponse struct {
-	Message string `json:"error"`
+type Error struct {
+	Msg    string
+	Status int
 }
 
-func RespondWithError(w http.ResponseWriter, err string, status int) {
+type ErrResponseJSON struct {
+	ErrMsg string `json:"error"`
+}
+
+func RespondWithError(w http.ResponseWriter, receivedError error, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(ErrResponse{Message: err})
+	err := json.NewEncoder(w).Encode(receivedError.Error())
+	if err != nil {
+		log.Println("error encoding json:", err)
+	}
 }
 
 func DecodeTrainerJSON(httpReq *http.Request) (models.Trainer, error) {
@@ -25,8 +33,7 @@ func DecodeTrainerJSON(httpReq *http.Request) (models.Trainer, error) {
 	decoder.DisallowUnknownFields()
 
 	if err := decoder.Decode(&trainer); err != nil {
-		log.Println(err)
-		return models.Trainer{}, err
+		return trainer, err
 	}
 
 	return trainer, nil
@@ -37,7 +44,6 @@ func DecodePokemonJSON(httpReq *http.Request) (models.Pokemon, error) {
 
 	err := json.NewDecoder(httpReq.Body).Decode(&pokemon)
 	if err != nil {
-		log.Println(err)
 		return models.Pokemon{}, err
 	}
 	return pokemon, nil

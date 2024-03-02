@@ -15,7 +15,6 @@ func NewAuthPostgres(db *sql.DB) *AuthPostgres {
 }
 
 func (r *AuthPostgres) CreateTrainer(trainer models.Trainer) (int, error) {
-
 	var id int
 
 	query := `INSERT INTO pokemon_trainers (NAME, PASSWORD_HASH) VALUES ($1, $2) RETURNING id`

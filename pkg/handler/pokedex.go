@@ -17,14 +17,14 @@ func (h *Handler) addPokemon(w http.ResponseWriter, r *http.Request) {
 	// Decode pokemon data from json
 	pokemon, err := helpers.DecodePokemonJSON(r)
 	if err != nil {
-		helpers.RespondWithError(w, err.Error(), http.StatusBadRequest)
+		helpers.RespondWithError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	// Run DB query
 	err = h.services.Pokedex.AddPokemon(pokemon)
 	if err != nil {
-		helpers.RespondWithError(w, err.Error(), http.StatusInternalServerError)
+		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -36,7 +36,7 @@ func (h *Handler) getAll(w http.ResponseWriter, r *http.Request) {
 	// Run DB query
 	pokemon, err := h.services.Pokedex.GetAll()
 	if err != nil {
-		helpers.RespondWithError(w, err.Error(), http.StatusInternalServerError)
+		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (h *Handler) getByName(w http.ResponseWriter, r *http.Request) {
 	// Run DB query
 	pokemon, err := h.services.Pokedex.GetByName(name)
 	if err != nil {
-		helpers.RespondWithError(w, err.Error(), http.StatusInternalServerError)
+		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -64,13 +64,13 @@ func (h *Handler) updatePokemon(w http.ResponseWriter, r *http.Request) {
 	// Decode from request
 	pokemon, err := helpers.DecodePokemonJSON(r)
 	if err != nil {
-		helpers.RespondWithError(w, err.Error(), http.StatusBadRequest)
+		helpers.RespondWithError(w, err, http.StatusBadRequest)
 		return
 	}
 	// Update value in DB
 	err = h.services.Pokedex.UpdatePokemon(pokemon, name)
 	if err != nil {
-		helpers.RespondWithError(w, err.Error(), http.StatusInternalServerError)
+		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h *Handler) deletePokemon(w http.ResponseWriter, r *http.Request) {
 
 	err := h.services.Pokedex.DeletePokemon(name)
 	if err != nil {
-		helpers.RespondWithError(w, err.Error(), http.StatusInternalServerError)
+		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
 	}
 

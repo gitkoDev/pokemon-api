@@ -77,9 +77,13 @@ func (r *PokedexPostgres) GetByName(pokemonName string) (models.Pokemon, error) 
 	return pokemon, nil
 }
 
-func (r *PokedexPostgres) UpdatePokemon(pokemonToUpdate models.Pokemon, originalName string) error {
+func (r *PokedexPostgres) UpdatePokemon(newPokemon models.Pokemon, originalName string) error {
 	isExisting, err := checkForExistence(r, originalName)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			responseString := fmt.Sprintf("%s not found in Pokedex", originalName)
+			return errors.New(responseString)
+		}
 		return err
 	}
 	if !isExisting {
@@ -91,7 +95,7 @@ func (r *PokedexPostgres) UpdatePokemon(pokemonToUpdate models.Pokemon, original
 		SET name = $1, type = $2, hp = $3, attack = $4, defense = $5
 		WHERE name = $6
 		`
-	_, err = r.db.Exec(query, pokemonToUpdate.Name, pokemonToUpdate.PokemonType, pokemonToUpdate.Hp, pokemonToUpdate.Attack, pokemonToUpdate.Defense, originalName)
+	_, err = r.db.Exec(query, newPokemon.Name, newPokemon.PokemonType, newPokemon.Hp, newPokemon.Attack, newPokemon.Defense, originalName)
 	if err != nil {
 		return err
 	}
