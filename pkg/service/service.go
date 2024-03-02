@@ -1,18 +1,30 @@
 package service
 
-import "github.com/gitkoDev/pokemon-db/pkg/repository"
+import (
+	"github.com/gitkoDev/pokemon-db/models"
+	"github.com/gitkoDev/pokemon-db/pkg/repository"
+)
 
 type Authorization interface {
+	CreateTrainer(trainer models.Trainer) (int, error)
 }
 
-type AllPokemon interface {
+type Pokedex interface {
+	GetAll() ([]models.Pokemon, error)
+	GetByName(pokemonName string) (models.Pokemon, error)
+	AddPokemon(pokemon models.Pokemon) error
+	UpdatePokemon(pokemon models.Pokemon, pokemonName string) error
+	DeletePokemon(pokemonName string) error
 }
 
 type Service struct {
 	Authorization
-	AllPokemon
+	Pokedex
 }
 
 func NewService(repo *repository.Repository) *Service {
-	return &Service{}
+	return &Service{
+		Authorization: NewAuthService(repo.Authorization),
+		Pokedex:       NewPokemonListService(repo.Pokedex),
+	}
 }

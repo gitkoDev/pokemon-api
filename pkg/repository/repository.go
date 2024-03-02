@@ -1,13 +1,31 @@
 package repository
 
-import "database/sql"
+import (
+	"database/sql"
 
-type Authorization interface{}
+	"github.com/gitkoDev/pokemon-db/models"
+)
 
-type AllPokemon interface{}
+type Authorization interface {
+	CreateTrainer(trainer models.Trainer) (int, error)
+}
 
-type Repository struct{}
+type Pokedex interface {
+	GetAll() ([]models.Pokemon, error)
+	GetByName(pokemonName string) (models.Pokemon, error)
+	AddPokemon(pokemon models.Pokemon) error
+	UpdatePokemon(pokemon models.Pokemon, pokemonName string) error
+	DeletePokemon(pokemonName string) error
+}
+
+type Repository struct {
+	Authorization
+	Pokedex
+}
 
 func NewRepository(db *sql.DB) *Repository {
-	return &Repository{}
+	return &Repository{
+		Authorization: NewAuthPostgres(db),
+		Pokedex:       NewPokedexPostgres(db),
+	}
 }

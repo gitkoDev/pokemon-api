@@ -3,25 +3,28 @@ package main
 import (
 	"os"
 
+	"github.com/gitkoDev/pokemon-db/pkg/handler"
 	"github.com/gitkoDev/pokemon-db/pkg/repository"
+	"github.com/gitkoDev/pokemon-db/pkg/service"
 	"github.com/gitkoDev/pokemon-db/server"
 	"github.com/joho/godotenv"
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func main() {
 	// Configuration phase
+	log.SetFormatter(&log.TextFormatter{})
+
 	if err := initConfigs(); err != nil {
-		logrus.Fatal("error loading config files:", err)
+		log.Fatal("error loading config files:", err)
 	}
 
 	if err := loadEnv(); err != nil {
-		logrus.Fatal("error loading .env file:", err)
+		log.Fatal("error loading .env file:", err)
 	}
 
 	// DB connection phase
-
 	dbConfig := repository.Config{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
@@ -33,17 +36,22 @@ func main() {
 
 	db, err := repository.NewDB(dbConfig)
 	if err != nil {
-		logrus.Fatalln(err)
+		log.Fatalln(err)
 	} else {
-		logrus.Println("database running on port", dbConfig.Port)
+		log.Println("database running on port", dbConfig.Port)
 	}
+
+	repo := repository.NewRepository(db)
+	services := service.NewService(repo)
+	handler := handler.NewHandler(services)
 
 	// Routing phase
 	srv := new(server.Server)
 	port := viper.GetString("port")
-	logrus.Println("server running on port", port)
-	if err = srv.Run(port, server.Router(db)); err != nil {
-		logrus.Fatalln("error running server", err)
+	log.Println("server running on port", port)
+
+	if err = srv.Run(port, handler.InitRoutes()); err != nil {
+		log.Fatalln("error running server", err)
 	}
 
 }
