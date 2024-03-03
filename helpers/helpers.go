@@ -26,6 +26,19 @@ func RespondWithError(w http.ResponseWriter, receivedError error, status int) {
 	}
 }
 
+func DecodeAuthJSON(httpReq *http.Request) (models.SingInInput, error) {
+	var input models.SingInInput
+
+	decoder := json.NewDecoder(httpReq.Body)
+	decoder.DisallowUnknownFields()
+
+	if err := decoder.Decode(&input); err != nil {
+		return input, err
+	}
+
+	return input, nil
+}
+
 func DecodeTrainerJSON(httpReq *http.Request) (models.Trainer, error) {
 	trainer := models.Trainer{}
 

@@ -8,6 +8,7 @@ import (
 
 type Authorization interface {
 	CreateTrainer(trainer models.Trainer) (int, error)
+	GetTrainer(name string, password string) (models.Trainer, error)
 }
 
 type Pokedex interface {

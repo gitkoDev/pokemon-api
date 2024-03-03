@@ -18,7 +18,7 @@ func NewPokedexPostgres(db *sql.DB) *PokedexPostgres {
 }
 
 func (r *PokedexPostgres) AddPokemon(pokemonToAdd models.Pokemon) error {
-	isExisting, err := checkForExistence(r, pokemonToAdd.Name)
+	isExisting, err := checkForExistencePokedex(r, pokemonToAdd.Name)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (r *PokedexPostgres) GetByName(pokemonName string) (models.Pokemon, error) 
 }
 
 func (r *PokedexPostgres) UpdatePokemon(newPokemon models.Pokemon, originalName string) error {
-	isExisting, err := checkForExistence(r, originalName)
+	isExisting, err := checkForExistencePokedex(r, originalName)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			responseString := fmt.Sprintf("%s not found in Pokedex", originalName)
@@ -104,7 +104,7 @@ func (r *PokedexPostgres) UpdatePokemon(newPokemon models.Pokemon, originalName 
 }
 
 func (r *PokedexPostgres) DeletePokemon(pokemonName string) error {
-	isExisting, err := checkForExistence(r, pokemonName)
+	isExisting, err := checkForExistencePokedex(r, pokemonName)
 	if err != nil {
 		return err
 	}
@@ -123,7 +123,7 @@ func (r *PokedexPostgres) DeletePokemon(pokemonName string) error {
 	return nil
 }
 
-func checkForExistence(r *PokedexPostgres, pokemonName string) (bool, error) {
+func checkForExistencePokedex(r *PokedexPostgres, pokemonName string) (bool, error) {
 	query := `SELECT id FROM pokemon WHERE name = $1`
 	var id uint
 

@@ -15,8 +15,8 @@ CREATE TABLE IF NOT EXISTS pokemon (
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS pokemon_trainers (
     id SERIAL PRIMARY KEY,
-    NAME VARCHAR(255) NOT NULL,
-    PASSWORD_HASH VARCHAR (255) NOT NULL
+    name VARCHAR(255) NOT NULL,
+    password_hash VARCHAR (255) NOT NULL
 );
 -- +goose StatementEnd
 

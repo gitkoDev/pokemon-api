@@ -8,8 +8,6 @@ import (
 	"github.com/gitkoDev/pokemon-db/helpers"
 )
 
-// "github.com/go-chi/chi/v5"
-
 func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 
 	var input, err = helpers.DecodeTrainerJSON(r)
@@ -34,7 +32,34 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
-	// var input, _ = helpers.DecodeTrainerJSON(r)
-	// log.Println(input)
+	// Decode user data from request
+	input, err := helpers.DecodeTrainerJSON(r)
+	if err != nil {
+		helpers.RespondWithError(w, err, http.StatusBadRequest)
+		return
+	}
 
+	// Validate user data
+	if input.Name == "" || input.Password == "" {
+		responseString := fmt.Sprintln("please provide valid trainer name and password")
+		helpers.RespondWithError(w, errors.New(responseString), http.StatusBadRequest)
+		return
+	}
+
+	// Check for user's existence in DB
+	_, err = h.services.Authorization.GetTrainer(input.Name, input.Password)
+	if err != nil {
+		helpers.RespondWithError(w, err, http.StatusBadRequest)
+		return
+	}
+
+	token, err := h.services.Authorization.GenerateToken(input.Name, input.Password)
+	if err != nil {
+		helpers.RespondWithError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	helpers.WriteJSON(w, map[string]string{
+		"token": token,
+	}, http.StatusOK)
 }
