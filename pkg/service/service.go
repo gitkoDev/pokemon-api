@@ -9,6 +9,7 @@ type Authorization interface {
 	CreateTrainer(trainer models.Trainer) (int, error)
 	GetTrainer(name string, password string) (models.Trainer, error)
 	GenerateToken(name string, password string) (string, error)
+	ParseToken(token string) (int, error)
 }
 
 type Pokedex interface {
