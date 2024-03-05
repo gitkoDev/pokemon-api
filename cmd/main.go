@@ -43,14 +43,14 @@ func main() {
 
 	repo := repository.NewRepository(db)
 	services := service.NewService(repo)
-	handler := handler.NewHandler(services)
+	hnd := handler.NewHandler(services)
 
 	// Routing phase
 	srv := new(server.Server)
 	port := viper.GetString("port")
 	log.Println("server running on port", port)
 
-	if err = srv.Run(port, handler.InitRoutes()); err != nil {
+	if err = srv.Run(port, hnd.InitRoutes()); err != nil {
 		log.Fatalln("error running server", err)
 	}
 

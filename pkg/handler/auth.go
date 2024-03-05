@@ -53,6 +53,7 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// If user found, generate token for him
 	token, err := h.services.Authorization.GenerateToken(input.Name, input.Password)
 	if err != nil {
 		helpers.RespondWithError(w, err, http.StatusInternalServerError)

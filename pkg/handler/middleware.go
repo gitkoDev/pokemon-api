@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -14,22 +13,56 @@ const (
 	authorizationHeader = "Authorization"
 )
 
-func (h *Handler) IdentifyUser(w http.ResponseWriter, r *http.Request) {
-	context := r.Context()
-	header := context.Value(authorizationHeader)
+// func (h *Handler) ProcessMiddleware(handler http.Handler) http.Handler {
 
-	if header == "" {
-		helpers.RespondWithError(w, errors.New("empty authorization header"), http.StatusUnauthorized)
-		return
-	}
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		h.IdentifyUser(w, r)
+// 		handler.ServeHTTP(w, r)
 
-	headerString := fmt.Sprintln(header)
-	headerParts := strings.Split(headerString, " ")
-	id, err := h.services.Authorization.ParseToken(headerParts[1])
-	if err != nil {
-		helpers.RespondWithError(w, err, http.StatusInternalServerError)
-		return
-	}
+// 	})
 
-	log.Println(id)
+// }
+
+func (h *Handler) IdentifyUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		authToken := r.Header.Values(authorizationHeader)
+
+		if authToken == nil {
+			helpers.RespondWithError(w, errors.New("empty authorization header"), http.StatusUnauthorized)
+			return
+		}
+
+		authToken = strings.Split(authToken[0], " ")
+		tokenPart := authToken[1]
+		id, err := h.services.Authorization.ParseToken(tokenPart)
+		if err != nil {
+			helpers.RespondWithError(w, err, http.StatusInternalServerError)
+			return
+		}
+
+		log.Println("success", id)
+
+		next.ServeHTTP(w, r)
+	})
+
 }
+
+// func (h *Handler) IdentifyUser(w http.ResponseWriter, r *http.Request) {
+
+// 	authToken := r.Header.Values(authorizationHeader)
+
+// 	if authToken == nil {
+// 		helpers.RespondWithError(w, errors.New("empty authorization header"), http.StatusUnauthorized)
+// 		return
+// 	}
+
+// 	authToken = strings.Split(authToken[0], " ")
+// 	tokenPart := authToken[1]
+// 	id, err := h.services.Authorization.ParseToken(tokenPart)
+// 	if err != nil {
+// 		helpers.RespondWithError(w, err, http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	log.Println("success", id)
+// }
