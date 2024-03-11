@@ -25,15 +25,15 @@ func (h *Handler) InitRoutes() http.Handler {
 		r.Post("/sign-in", h.signIn)
 	})
 
-	r.With(h.IdentifyUser).Route("/pokemon-api", func(r chi.Router) {
+	r.With(h.IdentifyUser).Route("/api", func(r chi.Router) {
 
 		r.Route("/v1", func(r chi.Router) {
 
-			r.Post("/Pokemon", h.addPokemon)
-			r.Get("/Pokemon", h.getAll)
-			r.Get("/Pokemon/{name}", h.getByName)
-			r.Put("/Pokemon/{name}", h.updatePokemon)
-			r.Delete("/Pokemon/{name}", h.deletePokemon)
+			r.Post("/pokemon", h.addPokemon)
+			r.Get("/pokemon", h.getAll)
+			r.Get("/pokemon/{name}", h.getByName)
+			r.Put("/pokemon/{name}", h.updatePokemon)
+			r.Delete("/pokemon/{name}", h.deletePokemon)
 		})
 	})
 	return r

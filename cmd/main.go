@@ -1,7 +1,11 @@
 package main
 
 import (
+	"context"
+	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gitkoDev/pokemon-db/pkg/handler"
 	"github.com/gitkoDev/pokemon-db/pkg/repository"
@@ -48,12 +52,29 @@ func main() {
 	// Routing phase
 	srv := new(server.Server)
 	port := viper.GetString("port")
+
+	go func() {
+		if err = srv.Run(port, hnd.InitRoutes()); err != nil && err != http.ErrServerClosed {
+			log.Fatalln("error running server", err)
+		}
+	}()
+
 	log.Println("server running on port", port)
 
-	if err = srv.Run(port, hnd.InitRoutes()); err != nil {
-		log.Fatalln("error running server", err)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer stop()
+
+	<-ctx.Done()
+
+	log.Println("server shutting down")
+	if err := srv.Shutdown(context.Background()); err != nil {
+		log.Errorln("error shutting down server:", err)
 	}
 
+	log.Println("database shutting down")
+	if err := db.Close(); err != nil {
+		log.Errorln("error shutting down database:", err)
+	}
 }
 
 func initConfigs() error {

@@ -66,9 +66,23 @@ func (r *PokedexPostgres) GetAll() ([]models.Pokemon, error) {
 func (r *PokedexPostgres) GetByName(pokemonName string) (models.Pokemon, error) {
 	pokemon := models.Pokemon{}
 
+	isExisting, err := checkForExistencePokedex(r, pokemonName)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			responseString := fmt.Sprintf("%s not found in Pokedex", pokemonName)
+			return pokemon, errors.New(responseString)
+		}
+		return pokemon, err
+	}
+	if !isExisting {
+		errMsg := fmt.Sprintf("%s is not in Pokedex", pokemonName)
+		return pokemon, errors.New(errMsg)
+
+	}
+
 	query := `SELECT name, type, hp, attack, defense FROM pokemon WHERE name = $1`
 
-	err := r.db.QueryRow(query, pokemonName).Scan(&pokemon.Name, (*pq.StringArray)(&pokemon.PokemonType), &pokemon.Hp, &pokemon.Attack, &pokemon.Defense)
+	err = r.db.QueryRow(query, pokemonName).Scan(&pokemon.Name, (*pq.StringArray)(&pokemon.PokemonType), &pokemon.Hp, &pokemon.Attack, &pokemon.Defense)
 	if err != nil {
 		return models.Pokemon{}, err
 	}
