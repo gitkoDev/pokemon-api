@@ -7,22 +7,24 @@ GOOSE_DRIVER=postgres
 GOOSE_DBSTRING="postgres://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}?sslmode=disable"
 GOOSE_MIGRATION_DIR=./schema
 
-# Initial call to migrate all tables
-initdb: 
+build:
+	docker-compose build
+
+initUp: 
 	@echo "starting docker container"
 	docker-compose up -d
 	@echo "initializing database schema"
 	goose -dir ${GOOSE_MIGRATION_DIR} ${GOOSE_DRIVER} ${GOOSE_DBSTRING} ${GOOSE_MIGRATION_DIR } up
 	@echo "initialization finished"
-	
+
+up:
+	docker-compose up -d
+
+down:
+	docker-compose down
+
 startPsql: 
 	docker exec -ti ${DB_CONTAINER} psql -U ${DB_USER}
-
-build:
-	docker-compose build
-
-run:
-	docker-compose up -d
 
 migrateup:
 	@echo "migrating up"

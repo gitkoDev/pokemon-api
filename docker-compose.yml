@@ -1,11 +1,7 @@
 services:
   pokemonapi:
     container_name: pokemonapi
-    build: 
-      context: ./
-      args:
-        - HTTP_PROXY=http://goproxy.cn
-        - HTTPS_PROXY=http://goproxy.cn
+    build: ./
     image: pokemonapi:latest
     command: ./pokemonapi
     ports:
