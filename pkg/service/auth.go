@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gitkoDev/pokemon-db/models"
-	"github.com/gitkoDev/pokemon-db/pkg/repository"
+	"github.com/gitkoDev/pokemon-api/models"
+	"github.com/gitkoDev/pokemon-api/pkg/repository"
 	"github.com/golang-jwt/jwt/v5"
 )
 

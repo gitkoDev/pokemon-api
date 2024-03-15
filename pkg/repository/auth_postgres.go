@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/gitkoDev/pokemon-db/models"
+	"github.com/gitkoDev/pokemon-api/models"
 )
 
 type AuthPostgres struct {

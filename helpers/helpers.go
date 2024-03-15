@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gitkoDev/pokemon-db/models"
+	"github.com/gitkoDev/pokemon-api/models"
 	log "github.com/sirupsen/logrus"
 )
 

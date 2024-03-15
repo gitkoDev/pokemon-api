@@ -1,8 +1,8 @@
 package service
 
 import (
-	"github.com/gitkoDev/pokemon-db/models"
-	"github.com/gitkoDev/pokemon-db/pkg/repository"
+	"github.com/gitkoDev/pokemon-api/models"
+	"github.com/gitkoDev/pokemon-api/pkg/repository"
 )
 
 type Authorization interface {

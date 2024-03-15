@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 
-	"github.com/gitkoDev/pokemon-db/models"
+	"github.com/gitkoDev/pokemon-api/models"
 )
 
 type Authorization interface {

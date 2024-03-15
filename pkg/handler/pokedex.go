@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gitkoDev/pokemon-db/helpers"
+	"github.com/gitkoDev/pokemon-api/helpers"
 	"github.com/go-chi/chi/v5"
 )
 

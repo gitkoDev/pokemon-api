@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gitkoDev/pokemon-db/helpers"
+	"github.com/gitkoDev/pokemon-api/helpers"
 )
 
 func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {

@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gitkoDev/pokemon-db/pkg/service"
+	"github.com/gitkoDev/pokemon-api/pkg/service"
 	"github.com/go-chi/chi/v5"
 )
 

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gitkoDev/pokemon-db/helpers"
+	"github.com/gitkoDev/pokemon-api/helpers"
 )
 
 const (

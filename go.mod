@@ -1,4 +1,4 @@
-module github.com/gitkoDev/pokemon-db
+module github.com/gitkoDev/pokemon-api
 
 go 1.22.0
 
