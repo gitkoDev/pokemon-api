@@ -1,18 +1,39 @@
 services:
+  pokemonapi:
+    container_name: pokemonapi
+    build: 
+      context: ./
+      args:
+        - HTTP_PROXY=http://goproxy.cn
+        - HTTPS_PROXY=http://goproxy.cn
+    image: pokemonapi:latest
+    command: ./pokemonapi
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_PASSWORD=1234
+
+
   db: 
     image: postgres:latest
-    container_name: pokemon_db
+    container_name: pokemondb
     restart: always
     environment:
-      - POSTGRES_USER=pokemon_db
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=1234
-      - POSTGRES_DB=pokemon_db
+      - POSTGRES_DB=postgres
     ports:
-      - '5432:5432'
+      - 5432:5432
     volumes:
-      - db-data:/var/lib/postgresql/data
-
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  db-data:
-
+  pgdata:

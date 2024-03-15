@@ -18,7 +18,7 @@ func NewHandler(services *service.Service) *Handler {
 func (h *Handler) InitRoutes() http.Handler {
 	r := chi.NewRouter()
 
-	r.Get("/ping", h.ping)
+	r.Get("/health", h.ping)
 
 	r.Route("/auth", func(r chi.Router) {
 		r.Post("/sign-up", h.signUp)

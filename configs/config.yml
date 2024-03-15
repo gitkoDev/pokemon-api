@@ -1,9 +1,9 @@
 port: "8080"
 
 db:
-  host: "localhost"
+  host: "pokemondb"
   port: "5432"
-  username: "pokemon_db"
+  username: "postgres"
   password: "1234"
-  dbname: "pokemon_db"
+  dbname: "postgres"
   sslmode: "disable"
