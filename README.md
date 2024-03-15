@@ -1,5 +1,9 @@
 # Go Pokedex REST API
 
+<p align="center">
+  <img src="https://lirp.cdn-website.com/61e0cb41/dms3rep/multi/opt/pngimg.com+-+pokeball_PNG24-1920w.png" width="200" alt="Nest Logo" />
+</p>
+
 Pokedex REST API allows users to keep track of caught pokemon and their stats: `TYPE`, `HP`, `ATTACK`, and `DEFENSE`. The API utilizes JWT authentification for additional security as well as a number of other tools (look below). The projects structure implements `clean architecture` and `dependecy injection` principles 
 
 ## Endpoints
