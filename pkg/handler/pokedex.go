@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gitkoDev/pokemon-api/helpers"
 	"github.com/go-chi/chi/v5"
@@ -22,13 +23,14 @@ func (h *Handler) addPokemon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Run DB query
-	err = h.services.Pokedex.AddPokemon(pokemon)
+	id, err := h.services.Pokedex.AddPokemon(pokemon)
 	if err != nil {
 		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	// Respond if successful
+	// By default "id" is a zero value, but we need to show the user what the sql "id" of updated pokemon is
+	pokemon.Id = id
 	helpers.WriteJSON(w, pokemon, http.StatusCreated)
 }
 
@@ -44,11 +46,16 @@ func (h *Handler) getAll(w http.ResponseWriter, r *http.Request) {
 	helpers.WriteJSON(w, pokemon, http.StatusOK)
 }
 
-func (h *Handler) getByName(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+func (h *Handler) getById(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		helpers.RespondWithError(w, err, http.StatusBadRequest)
+		return
+	}
 
 	// Run DB query
-	pokemon, err := h.services.Pokedex.GetByName(name)
+	pokemon, err := h.services.Pokedex.GetById(intId)
 	if err != nil {
 		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
@@ -59,7 +66,12 @@ func (h *Handler) getByName(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) updatePokemon(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+	id := chi.URLParam(r, "id")
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		helpers.RespondWithError(w, err, http.StatusBadRequest)
+		return
+	}
 
 	// Decode from request
 	pokemon, err := helpers.DecodePokemonJSON(r)
@@ -68,25 +80,31 @@ func (h *Handler) updatePokemon(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Update value in DB
-	err = h.services.Pokedex.UpdatePokemon(pokemon, name)
+	err = h.services.Pokedex.UpdatePokemon(pokemon, intId)
 	if err != nil {
 		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	responseString := fmt.Sprintf("%s updated", name)
-	helpers.WriteJSON(w, responseString, http.StatusOK)
+	// By default "id" is a zero value, but we need to show the user what the sql "id" of updated pokemon is
+	pokemon.Id = intId
+	helpers.WriteJSON(w, pokemon, http.StatusOK)
 }
 
 func (h *Handler) deletePokemon(w http.ResponseWriter, r *http.Request) {
-	name := chi.URLParam(r, "name")
+	id := chi.URLParam(r, "id")
+	intId, err := strconv.Atoi(id)
+	if err != nil {
+		helpers.RespondWithError(w, err, http.StatusBadRequest)
+		return
+	}
 
-	err := h.services.Pokedex.DeletePokemon(name)
+	err = h.services.Pokedex.DeletePokemon(intId)
 	if err != nil {
 		helpers.RespondWithError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	responseString := fmt.Sprintf("%s deleted", name)
+	responseString := fmt.Sprintf("%d deleted", intId)
 	helpers.WriteJSON(w, responseString, http.StatusOK)
 }

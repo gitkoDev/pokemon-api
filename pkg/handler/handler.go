@@ -31,9 +31,9 @@ func (h *Handler) InitRoutes() http.Handler {
 
 			r.Post("/pokemon", h.addPokemon)
 			r.Get("/pokemon", h.getAll)
-			r.Get("/pokemon/{name}", h.getByName)
-			r.Put("/pokemon/{name}", h.updatePokemon)
-			r.Delete("/pokemon/{name}", h.deletePokemon)
+			r.Get("/pokemon/{id}", h.getById)
+			r.Put("/pokemon/{id}", h.updatePokemon)
+			r.Delete("/pokemon/{id}", h.deletePokemon)
 		})
 	})
 	return r

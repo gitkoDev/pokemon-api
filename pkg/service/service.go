@@ -14,10 +14,10 @@ type Authorization interface {
 
 type Pokedex interface {
 	GetAll() ([]models.Pokemon, error)
-	GetByName(pokemonName string) (models.Pokemon, error)
-	AddPokemon(pokemon models.Pokemon) error
-	UpdatePokemon(pokemon models.Pokemon, pokemonName string) error
-	DeletePokemon(pokemonName string) error
+	GetById(pokemonId int) (models.Pokemon, error)
+	AddPokemon(pokemon models.Pokemon) (int, error)
+	UpdatePokemon(pokemon models.Pokemon, pokemonId int) error
+	DeletePokemon(pokemonId int) error
 }
 
 type Service struct {
