@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/gitkoDev/pokemon-api/models"
 	"github.com/lib/pq"
@@ -18,8 +19,12 @@ func NewPokedexPostgres(db *sql.DB) *PokedexPostgres {
 func (r *PokedexPostgres) AddPokemon(pokemonToAdd models.Pokemon) (int, error) {
 	var pokemonId int
 
+	if pokemonToAdd.Name == "" || len(pokemonToAdd.PokemonType) == 0 {
+		return 0, errors.New("please provide valid pokemon name and types")
+	}
+
 	query := `INSERT INTO pokemon (name, type, hp, attack, defense) VALUES($1, $2, $3, $4, $5) RETURNING id`
-	row := r.db.QueryRow(query, pokemonToAdd.Name, pokemonToAdd.PokemonType, pokemonToAdd.Hp, pokemonToAdd.Attack, pokemonToAdd.Defense)
+	row := r.db.QueryRow(query, pokemonToAdd.Name, pq.Array(pokemonToAdd.PokemonType), pokemonToAdd.Hp, pokemonToAdd.Attack, pokemonToAdd.Defense)
 
 	err := row.Scan(&pokemonId)
 	if err != nil {
@@ -79,12 +84,16 @@ func (r *PokedexPostgres) UpdatePokemon(newPokemon models.Pokemon, pokemonId int
 		return err
 	}
 
+	if newPokemon.Name == "" || len(newPokemon.PokemonType) == 0 {
+		return errors.New("please provide valid pokemon name and types")
+	}
+
 	// Update pokemon if exists
 	query = `UPDATE pokemon
 		SET name = $1, type = $2, hp = $3, attack = $4, defense = $5
 		WHERE id = $6
 		`
-	_, err = r.db.Exec(query, newPokemon.Name, newPokemon.PokemonType, newPokemon.Hp, newPokemon.Attack, newPokemon.Defense, pokemonId)
+	_, err = r.db.Exec(query, newPokemon.Name, pq.Array(newPokemon.PokemonType), newPokemon.Hp, newPokemon.Attack, newPokemon.Defense, pokemonId)
 	if err != nil {
 		return err
 	}
@@ -110,19 +119,4 @@ func (r *PokedexPostgres) DeletePokemon(pokemonId int) error {
 	}
 
 	return nil
-}
-
-func checkForExistencePokedex(r *PokedexPostgres, pokemonName string) (bool, error) {
-	query := `SELECT id FROM pokemon WHERE id = $1`
-	var id uint
-
-	err := r.db.QueryRow(query, pokemonName).Scan(&id)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
-		return false, err
-	}
-
-	return true, nil
 }

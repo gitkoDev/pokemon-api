@@ -8,11 +8,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-const (
-	pokemonTable  = "pokemon"
-	trainersTable = "pokemon_trainers"
-)
-
 type Config struct {
 	Host     string
 	Port     string
