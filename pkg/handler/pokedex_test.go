@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"context"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -9,70 +9,341 @@ import (
 
 	"github.com/gitkoDev/pokemon-api/models"
 	"github.com/gitkoDev/pokemon-api/pkg/service"
+	"github.com/go-chi/chi/v5"
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
-var mockTrainer = models.Trainer{Name: "test", Password: "test"}
+func Test_AddPokemon(t *testing.T) {
+	// Init mock controller
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-var services = &service.Service{}
-var handler = &Handler{}
+	// Setup tests
+	tests := []struct {
+		testName        string
+		inputString     string
+		mock            func(s *service.MockPokedex, pokemon string)
+		wantStatusCode  int
+		wantResposeBody string
+	}{
+		{
+			testName:    "OK",
+			inputString: `{"name":"Test", "type":["TestType"],"hp":40,"attack":40,"defense":40}`,
+			mock: func(s *service.MockPokedex, pokemon string) {
+				s.EXPECT().AddPokemon(models.Pokemon{Name: "Test", PokemonType: []string{"TestType"}, Hp: 40, Attack: 40, Defense: 40}).Return(1, nil)
+			},
+			wantStatusCode:  201,
+			wantResposeBody: `{"id":1,"name":"Test","type":["TestType"],"hp":40,"attack":40,"defense":40}`,
+		},
+		{
+			testName:    "Server error. Error",
+			inputString: `{"name":"Test", "type":["TestType"],"hp":40,"attack":40,"defense":40}`,
+			mock: func(s *service.MockPokedex, pokemon string) {
+				s.EXPECT().AddPokemon(models.Pokemon{Name: "Test", PokemonType: []string{"TestType"}, Hp: 40, Attack: 40, Defense: 40}).Return(0, errors.New("internal service error"))
+			},
+			wantStatusCode:  500,
+			wantResposeBody: `{"error":"internal service error"}`,
+		},
+	}
 
-var token string
+	// Run tests
+	for _, testCase := range tests {
+		t.Run(testCase.testName, func(t *testing.T) {
+			// Init mock pokedex
+			pokedex := service.NewMockPokedex(ctrl)
 
-func init() {
+			// Prepare mock behavior
+			testCase.mock(pokedex, testCase.inputString)
 
-	// log.Println(token)
+			// Init service struct with moth auth interface + handler
+			service := &service.Service{Pokedex: pokedex}
+			handler := NewHandler(service)
+
+			// Init server
+			r := chi.NewRouter()
+			r.Post("/api/v1/pokemon", handler.addPokemon)
+
+			// Init recorder and request
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/pokemon", strings.NewReader(testCase.inputString))
+
+			// Perform request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, testCase.wantStatusCode, w.Code)
+			assert.Equal(t, testCase.wantResposeBody, strings.Trim(w.Body.String(), "\n"))
+		})
+	}
 }
 
-func TestPing(t *testing.T) {
-	// Init request
-	req, err := http.NewRequest("GET", "/health", nil)
-	req = req.WithContext(context.WithValue(req.Context(), "Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA4MDc0NjksImlhdCI6MTcxMDc2NDI2OSwidHJhaW5lcl9pZCI6MX0.gG7UOZksiscT618x1uan5FA8F5YbDDivy2z17ouRcIY"))
-	if err != nil {
-		t.Fatal(err)
+func Test_GetAll(t *testing.T) {
+	// Init mock controller
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Setup tests
+	tests := []struct {
+		testName        string
+		mock            func(s *service.MockPokedex)
+		wantStatusCode  int
+		wantResposeBody string
+	}{
+		{
+			testName: "OK",
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().GetAll().Return([]models.Pokemon{
+					{Id: 1, Name: "Test", PokemonType: []string{"TestType"}, Hp: 40, Attack: 40, Defense: 40},
+					{Id: 2, Name: "Test", PokemonType: []string{"TestType"}, Hp: 40, Attack: 40, Defense: 40},
+				}, nil)
+			},
+			wantStatusCode:  200,
+			wantResposeBody: `[{"id":1,"name":"Test","type":["TestType"],"hp":40,"attack":40,"defense":40},{"id":2,"name":"Test","type":["TestType"],"hp":40,"attack":40,"defense":40}]`,
+		},
+		{
+			testName: "Server error. Error",
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().GetAll().Return([]models.Pokemon{}, errors.New("internal service error"))
+			},
+			wantStatusCode:  500,
+			wantResposeBody: `{"error":"internal service error"}`,
+		},
 	}
 
-	// Init request recorder and handler
-	rr := httptest.NewRecorder()
-	hnd := handler
-	hnd.InitRoutes().ServeHTTP(rr, req)
+	// Run tests
+	for _, testCase := range tests {
+		t.Run(testCase.testName, func(t *testing.T) {
+			// Init mock pokedex
+			pokedex := service.NewMockPokedex(ctrl)
 
-	req.Header.Set("Authorization", "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MTA4MDc0NjksImlhdCI6MTcxMDc2NDI2OSwidHJhaW5lcl9pZCI6MX0.gG7UOZksiscT618x1uan5FA8F5YbDDivy2z17ouRcIY")
-	// log.Println(req.Header.Values("Authorization"), "here")
+			// Prepare mock behavior
+			testCase.mock(pokedex)
 
-	// Check for status code
-	if status := rr.Code; status != 200 {
-		t.Fatalf("wrong status code: expected: %v, got: %v", http.StatusOK, status)
+			// Init service struct with moth auth interface + handler
+			service := &service.Service{Pokedex: pokedex}
+			handler := NewHandler(service)
+
+			// Init server
+			r := chi.NewRouter()
+			r.Post("/api/v1/pokemon", handler.getAll)
+
+			// Init recorder and request
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/pokemon", nil)
+
+			// Perform request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, testCase.wantStatusCode, w.Code)
+			assert.Equal(t, testCase.wantResposeBody, strings.TrimSpace(w.Body.String()))
+		})
 	}
 
-	// Check for response
-	expectedBody := "Pokemon API v.1.0"
-	if rr.Body.String() != expectedBody {
-		t.Fatalf("wrong body, expected: %s, got: %s", expectedBody, rr.Body.String())
+}
+
+func Test_GetById(t *testing.T) {
+	// Init mock controller
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Setup tests
+	tests := []struct {
+		testName        string
+		inputId         int
+		mock            func(s *service.MockPokedex)
+		wantStatusCode  int
+		wantResposeBody string
+	}{
+		{
+			testName: "OK",
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().GetById(1).Return(models.Pokemon{
+					Id: 1, Name: "Test", PokemonType: []string{"TestType"}, Hp: 40, Attack: 40, Defense: 40,
+				}, nil)
+			},
+			wantStatusCode:  200,
+			wantResposeBody: `{"id":1,"name":"Test","type":["TestType"],"hp":40,"attack":40,"defense":40}`,
+		},
+		{
+			testName: "Server error. Error",
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().GetById(1).Return(models.Pokemon{}, errors.New("internal service error"))
+			},
+			wantStatusCode:  500,
+			wantResposeBody: `{"error":"internal service error"}`,
+		},
+	}
+
+	// Run tests
+	for _, testCase := range tests {
+		t.Run(testCase.testName, func(t *testing.T) {
+			// Init mock pokedex
+			pokedex := service.NewMockPokedex(ctrl)
+
+			// Prepare mock behavior
+			testCase.mock(pokedex)
+
+			// Init service struct with moth auth interface + handler
+			service := &service.Service{Pokedex: pokedex}
+			handler := NewHandler(service)
+
+			// Init server
+			r := chi.NewRouter()
+			r.Post("/api/v1/pokemon/{id}", handler.getById)
+
+			// Init recorder and request
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPost, "/api/v1/pokemon/1", nil)
+
+			// Perform request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, testCase.wantStatusCode, w.Code)
+			assert.Equal(t, testCase.wantResposeBody, strings.TrimSpace(w.Body.String()))
+		})
+	}
+
+}
+
+func Test_UpdatePokemon(t *testing.T) {
+	// Init mock controller
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// Setup tests
+	tests := []struct {
+		testName        string
+		inputId         int
+		inputBody       string
+		mock            func(s *service.MockPokedex)
+		wantStatusCode  int
+		wantResposeBody string
+	}{
+		{
+			testName:  "OK",
+			inputBody: `{"name":"Test","type":["TestType"],"hp":40,"attack":40,"defense":40}`,
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().UpdatePokemon(models.Pokemon{Name: "Test", PokemonType: []string{"TestType"}, Hp: 40, Attack: 40, Defense: 40}, 1).
+					Return(nil)
+			},
+			wantStatusCode:  200,
+			wantResposeBody: `{"id":1,"name":"Test","type":["TestType"],"hp":40,"attack":40,"defense":40}`,
+		},
+		{
+			testName:  "Server error. Error",
+			inputBody: `{"name":"Test","type":["TestType"],"hp":40,"attack":40,"defense":40}`,
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().UpdatePokemon(models.Pokemon{Name: "Test", PokemonType: []string{"TestType"}, Hp: 40, Attack: 40, Defense: 40}, 1).
+					Return(errors.New("internal server error"))
+			},
+			wantStatusCode:  500,
+			wantResposeBody: `{"error":"internal server error"}`,
+		},
+		{
+			testName:  "Server error. Error",
+			inputBody: `{"name":"Test","type":["TestType"],"hp":40,"attack":40,"defense":40}`,
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().UpdatePokemon(models.Pokemon{Name: "Test", PokemonType: []string{"TestType"}, Hp: 40, Attack: 40, Defense: 40}, 1).
+					Return(errors.New("internal server error"))
+			},
+			wantStatusCode:  500,
+			wantResposeBody: `{"error":"internal server error"}`,
+		},
+	}
+
+	// Run tests
+	for _, testCase := range tests {
+		t.Run(testCase.testName, func(t *testing.T) {
+			// Init mock pokedex
+			pokedex := service.NewMockPokedex(ctrl)
+
+			// Prepare mock behavior
+			testCase.mock(pokedex)
+
+			// Init service struct with moth auth interface + handler
+			service := &service.Service{Pokedex: pokedex}
+			handler := NewHandler(service)
+
+			// Init server
+			r := chi.NewRouter()
+			r.Put("/api/v1/pokemon/{id}", handler.updatePokemon)
+
+			// Init recorder and request
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodPut, "/api/v1/pokemon/1", strings.NewReader(testCase.inputBody))
+
+			// Perform request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, testCase.wantStatusCode, w.Code)
+			assert.Equal(t, testCase.wantResposeBody, strings.TrimSpace(w.Body.String()))
+		})
 	}
 }
 
-func TestAddPokemon(t *testing.T) {
-	bd := "TestPokemon"
+func Test_DeletePokemon(t *testing.T) {
+	// Init mock controller
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	// Init request
-	req, err := http.NewRequest("POST", "/api/v1/pokemon", strings.NewReader(bd))
-	if err != nil {
-		t.Fatal(err)
+	// Setup tests
+	tests := []struct {
+		testName        string
+		inputId         int
+		mock            func(s *service.MockPokedex)
+		wantStatusCode  int
+		wantResposeBody string
+	}{
+		{
+			testName: "OK",
+			inputId:  1,
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().DeletePokemon(1).Return(nil)
+			},
+			wantStatusCode:  200,
+			wantResposeBody: `{"message":"1 deleted"}`,
+		}, {
+			testName: "Server error. Error",
+			inputId:  1,
+			mock: func(s *service.MockPokedex) {
+				s.EXPECT().DeletePokemon(1).Return(errors.New("internal server error"))
+			},
+			wantStatusCode:  500,
+			wantResposeBody: `{"error":"internal server error"}`,
+		},
 	}
 
-	// Init request recorder and handler
-	rr := httptest.NewRecorder()
-	hnd := handler
-	hnd.InitRoutes().ServeHTTP(rr, req)
+	// Run tests
+	for _, testCase := range tests {
+		t.Run(testCase.testName, func(t *testing.T) {
+			// Init mock pokedex
+			pokedex := service.NewMockPokedex(ctrl)
 
-	// Check for status code
-	if status := rr.Code; status != http.StatusCreated {
-		t.Fatalf("wrong status code, expected: %v, got: %v", http.StatusCreated, status)
+			// Prepare mock behavior
+			testCase.mock(pokedex)
+
+			// Init service struct with moth auth interface + handler
+			service := &service.Service{Pokedex: pokedex}
+			handler := NewHandler(service)
+
+			// Init server
+			r := chi.NewRouter()
+			r.Delete("/api/v1/pokemon/{id}", handler.deletePokemon)
+
+			// Init recorder and request
+			w := httptest.NewRecorder()
+			req := httptest.NewRequest(http.MethodDelete, "/api/v1/pokemon/1", nil)
+
+			// Perform request
+			r.ServeHTTP(w, req)
+
+			// Assert
+			assert.Equal(t, testCase.wantStatusCode, w.Code)
+			assert.Equal(t, testCase.wantResposeBody, strings.TrimSpace(w.Body.String()))
+		})
 	}
-
-	// Check for responce
-	if rr.Body.String() == bd {
-		t.Fatalf("wrong body, expected: %s, got: %s", bd, rr.Body.String())
-	}
-
 }

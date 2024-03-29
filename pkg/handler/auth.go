@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/gitkoDev/pokemon-api/helpers"
@@ -17,7 +16,7 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if input.Name == "" || input.Password == "" {
-		responseString := fmt.Sprintln("please provide valid trainer name and password")
+		responseString := "please provide valid trainer name and password"
 		helpers.RespondWithError(w, errors.New(responseString), http.StatusBadRequest)
 		return
 	}
@@ -28,7 +27,7 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.WriteJSON(w, map[string]int{"id": id}, http.StatusOK)
+	helpers.WriteJSON(w, map[string]int{"id": id}, http.StatusCreated)
 }
 
 func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +40,7 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 
 	// Validate user data
 	if input.Name == "" || input.Password == "" {
-		responseString := fmt.Sprintln("please provide valid trainer name and password")
+		responseString := "please provide valid trainer name and password"
 		helpers.RespondWithError(w, errors.New(responseString), http.StatusBadRequest)
 		return
 	}

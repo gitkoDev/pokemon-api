@@ -5,6 +5,8 @@ import (
 	"github.com/gitkoDev/pokemon-api/pkg/repository"
 )
 
+//go:generate go run go.uber.org/mock/mockgen@latest -source=service.go -destination=service_mock_test.go -package=service -self_package=github.com/gitkoDev/pokemon-api/pkg/service
+
 type Authorization interface {
 	CreateTrainer(trainer models.Trainer) (int, error)
 	GetTrainer(name string, password string) (models.Trainer, error)

@@ -106,5 +106,5 @@ func (h *Handler) deletePokemon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	responseString := fmt.Sprintf("%d deleted", intId)
-	helpers.WriteJSON(w, responseString, http.StatusOK)
+	helpers.RespondWithMessage(w, responseString, 200)
 }

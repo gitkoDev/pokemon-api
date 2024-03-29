@@ -8,19 +8,33 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Error struct {
-	Msg    string
-	Status int
-}
-
 type ErrResponseJSON struct {
 	ErrMsg string `json:"error"`
+}
+
+type MsgResponseJSON struct {
+	Msg string `json:"message"`
+}
+
+func RespondWithMessage(w http.ResponseWriter, receivedMsg string, status int) {
+	w.Header().Set("Content-type", "application/json")
+	w.WriteHeader(status)
+
+	// Init new msg struct
+	msg := MsgResponseJSON{Msg: receivedMsg}
+	err := json.NewEncoder(w).Encode(msg)
+	if err != nil {
+		log.Println("error encoding json:", err)
+	}
 }
 
 func RespondWithError(w http.ResponseWriter, receivedError error, status int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	err := json.NewEncoder(w).Encode(receivedError.Error())
+
+	// Init new error struct
+	errMsg := ErrResponseJSON{ErrMsg: receivedError.Error()}
+	err := json.NewEncoder(w).Encode(errMsg)
 	if err != nil {
 		log.Println("error encoding json:", err)
 	}
